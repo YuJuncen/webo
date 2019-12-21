@@ -1,6 +1,7 @@
 package net.csust.webo.web
 
 import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.exceptions.TokenExpiredException
 import net.csust.webo.web.response.WeboResponse
 import net.csust.webo.web.response.WeboResponse.Companion.Status
 import net.csust.webo.web.response.WeboResponse.Companion.Status.makeResponseWith
@@ -50,6 +51,10 @@ class GenericHandler {
     fun handleJwtVerificationException(ex: JWTVerificationException, req: WebRequest): WeboResponse<Map<String, Any>> {
         return Status.AUTH_FAILED.makeResponseWith(ex.toJson())
     }
+
+    @ExceptionHandler(TokenExpiredException::class)
+    @ResponseBody
+    fun handleExpire() = Status.TOKEN_EXPIRED.makeResponseWith(mapOf("hint" to "如题，您应该试试看刷新一下令牌了。"))
 
     @ExceptionHandler(Exception::class)
     @ResponseBody

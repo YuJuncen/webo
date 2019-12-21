@@ -5,5 +5,7 @@ import java.util.*
 
 data class WeboDetailedView(
         @JsonUnwrapped
-        val base: WeboView
+        val base: WeboView,
+
+        val sampleLiker: Set<Int>
 )

@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse
 class WriteUser(val jwt: JwtService, val user: UserService): HandlerInterceptorAdapter() {
     companion object {
         const val USER = "user"
+        const val USER_ID = "userId"
     }
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
@@ -25,6 +26,7 @@ class WriteUser(val jwt: JwtService, val user: UserService): HandlerInterceptorA
         val token = request.getHeader(HttpHeaders.AUTHORIZATION)
         val user = jwt.verify(token)
         request.setAttribute(USER, user)
+        request.setAttribute(USER_ID, user.id!!)
         return true
     }
 }

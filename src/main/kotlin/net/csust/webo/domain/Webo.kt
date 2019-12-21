@@ -3,8 +3,6 @@ package net.csust.webo.domain
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.sun.istack.NotNull
 import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 
@@ -41,13 +39,13 @@ data class Webo(
         var forwardedBy: MutableSet<UUID> = mutableSetOf()
 ) {
         fun commentTo(by: Int, content: String) = Comment(publisher = by, content= content, commentTo = this.id!!)
-        fun forward(by: Int, addionalMessage : String = "💬转发一条 Webo～"): Webo {
+        fun forward(by: Int, additionalMessage : String = "💬转发一条 Webo～"): Webo {
                 val newID = UUID.randomUUID()
                 this.forwardedBy.add(newID)
                 return Webo(
                         id = newID,
                         publishedBy = by,
-                        content = addionalMessage,
+                        content = additionalMessage,
                         forwarding = this.id!!
                 )
         }

@@ -1,5 +1,6 @@
 package net.csust.webo.web.response
 
+
 class WeboResponse<T>(val code : Int) {
     var message: String = ""
     var data : T? = null
@@ -10,6 +11,7 @@ class WeboResponse<T>(val code : Int) {
             const val BAD_REQUEST = 1;
             const val NOT_AUTH = 2;
             const val AUTH_FAILED = 3;
+            const val TOKEN_EXPIRED = 4;
             const val SERVER_ERROR = 9;
 
             val messageMap = mapOf(
@@ -17,7 +19,8 @@ class WeboResponse<T>(val code : Int) {
                     BAD_REQUEST to "请求有误",
                     NOT_AUTH to "没有验明身份",
                     AUTH_FAILED to "身份无效",
-                    SERVER_ERROR to "服务器异常"
+                    SERVER_ERROR to "服务器异常",
+                    TOKEN_EXPIRED to "令牌过期"
             )
 
             fun <T> (Int).makeResponseWith(data: T?) : WeboResponse<T> {

@@ -1,5 +1,7 @@
 package net.csust.webo.services.webo
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 import net.csust.webo.domain.Webo
 import net.csust.webo.services.user.UserNameView
 import java.time.Instant
@@ -13,6 +15,6 @@ data class WeboView(
         val likes: Int,
         val forwards: Int,
         val comments: Int,
-        val iLike: Boolean,
+        val myselfIsLike: Boolean,
         val forwarding: WeboView?
 )

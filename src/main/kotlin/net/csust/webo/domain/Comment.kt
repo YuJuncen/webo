@@ -1,5 +1,6 @@
 package net.csust.webo.domain
 
+import java.time.Instant
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
@@ -20,6 +21,10 @@ class Comment(
 
         @NotNull
         val content : String,
+
+        @NotNull
+        @Column(name = "publishTime")
+        val publishTime : Instant = Instant.now(),
 
         val replyTo : UUID? = null
 ) {

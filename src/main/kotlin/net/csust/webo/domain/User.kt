@@ -9,6 +9,7 @@ import java.lang.IllegalStateException
 import java.lang.RuntimeException
 import java.time.Instant
 import javax.persistence.*
+import javax.validation.constraints.Email
 
 @Entity
 @Table(uniqueConstraints = [UniqueConstraint(name="username-uniq", columnNames = ["username"])],
@@ -19,7 +20,7 @@ data class User(
         var id: Int?,
 
         @NotNull
-        @Column(unique = true)
+        @Column(unique = true, name = "username")
         var username : String,
 
         @NotNull
@@ -38,7 +39,9 @@ data class User(
         @ElementCollection
         @LazyCollection(LazyCollectionOption.TRUE)
         @JsonIgnore
-        var followedBy : MutableSet<Int> = mutableSetOf()
+        var followedBy : MutableSet<Int> = mutableSetOf(),
+
+        var email : String? = null
 ) {
     companion object {
         fun register(username: String, password: String) : User {

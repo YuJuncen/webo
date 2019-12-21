@@ -5,7 +5,7 @@ import net.csust.webo.services.webo.WeboService
 import net.csust.webo.web.annotations.InjectUserInfo
 import net.csust.webo.web.request.ForwardRequest
 import net.csust.webo.web.request.PostWeboRequest
-import net.csust.webo.web.request.WeboIdRequest
+import net.csust.webo.web.request.UUIDRequest
 import net.csust.webo.web.response.WeboResponse
 import java.util.*
 import net.csust.webo.web.response.WeboResponse.Companion.Status.response
@@ -13,14 +13,15 @@ import org.springframework.http.HttpStatus
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
-import javax.validation.Valid
 
 @RestController
 @RequestMapping("/post")
 @Validated
 class WeboController(val weboService: WeboService) {
     @GetMapping("")
-    fun getPost(id: String) = weboService.getWeboById(UUID.fromString(id)).response()
+    fun getPost(id: String, userId: Int?) = weboService
+            .getWeboById(UUID.fromString(id), userId)
+            .response()
 
     @GetMapping("all")
     fun getPosts(userId: Int?,
@@ -46,7 +47,7 @@ class WeboController(val weboService: WeboService) {
 
     @PostMapping("like")
     @InjectUserInfo
-    fun like(@RequestAttribute user: User, @RequestBody req: WeboIdRequest): WeboResponse<*> {
+    fun like(@RequestAttribute user: User, @RequestBody req: UUIDRequest): WeboResponse<*> {
         val stillLike = weboService.like(user.id!!, req.id)
         return mapOf("stillLike" to stillLike).response()
     }
@@ -59,7 +60,7 @@ class WeboController(val weboService: WeboService) {
 
     @DeleteMapping("")
     @InjectUserInfo
-    fun delete(@RequestAttribute user: User, @RequestBody req: WeboIdRequest) : WeboResponse<*> {
-        return weboService.deleteWebo(user.id!!, req.id).response()
+    fun delete(@RequestAttribute userId: Int, id: String) : WeboResponse<*> {
+        return weboService.deleteWebo(userId, UUID.fromString(id)).response()
     }
 }

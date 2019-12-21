@@ -20,6 +20,7 @@ configurations {
 }
 
 repositories {
+    maven(url="https://maven.aliyun.com/repository/jcenter")
     mavenCentral()
 }
 
@@ -29,10 +30,10 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    compile("org.hibernate.validator:hibernate-validator")
+    api("org.hibernate.validator:hibernate-validator")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
-    compile(group= "com.auth0", name= "java-jwt", version= "3.8.3")
+    api(group= "com.auth0", name= "java-jwt", version= "3.8.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
