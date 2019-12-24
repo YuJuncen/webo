@@ -5,6 +5,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException
 import net.csust.webo.web.response.WeboResponse
 import net.csust.webo.web.response.WeboResponse.Companion.Status
 import net.csust.webo.web.response.WeboResponse.Companion.Status.makeResponseWith
+import org.slf4j.LoggerFactory
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -15,6 +16,8 @@ import org.springframework.web.context.request.WebRequest
 @ControllerAdvice
 class GenericHandler {
     companion object {
+        val logger = LoggerFactory.getLogger(javaClass)
+
         fun (Exception).toJson() = mapOf<String, Any>(
                 "exceptionMessage" to (this.message ?: "没有可用消息！"),
                 "exceptionType" to this.javaClass.simpleName
@@ -59,6 +62,9 @@ class GenericHandler {
     @ExceptionHandler(Exception::class)
     @ResponseBody
     fun handleAnyException(ex: Exception, req: WebRequest): WeboResponse<Map<String, Any>> {
+        logger.warn("Unexpected Exception <<$ex>> Catch, Some Stack Info: ")
+        ex.stackTrace.take(5)
+                .forEach { logger.debug(it.toString()) }
         return Status.SERVER_ERROR.makeResponseWith(ex.toJson())
     }
 }

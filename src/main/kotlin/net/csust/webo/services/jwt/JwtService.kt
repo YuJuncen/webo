@@ -6,11 +6,9 @@ import com.auth0.jwt.exceptions.TokenExpiredException
 import com.auth0.jwt.interfaces.DecodedJWT
 import net.csust.webo.config.JwtConfig
 import net.csust.webo.domain.User
-import net.csust.webo.domain.UserRepository
 import net.csust.webo.services.kv.ConcurrentHashMapKvService
 import net.csust.webo.services.user.UserExceptions
 import net.csust.webo.services.user.UserService
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.*

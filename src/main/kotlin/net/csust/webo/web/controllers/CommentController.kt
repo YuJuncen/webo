@@ -26,7 +26,7 @@ class CommentController(
     fun allComments(id: String, before: Instant?) =
         commentService.getCommentsOf(UUID.fromString(id), before ?: Instant.now()).response()
 
-    @DeleteMapping("/")
+    @DeleteMapping("")
     @InjectUserInfo
     fun deleteComment(@RequestAttribute userId: Int,
                       id: String) = commentService.removeComment(userId, UUID.fromString(id)).response()

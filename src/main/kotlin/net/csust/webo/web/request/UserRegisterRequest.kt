@@ -17,7 +17,7 @@ data class UserRegisterRequest(
         @get:Size(min = 1, max = 128)
         val email: String? = null,
 
-        @get:Size(min = 1, max = 32)
+        @get:Size(min = 1, max = 64)
         @get:NotNull
         val password: String
 )

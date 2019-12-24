@@ -1,11 +1,10 @@
 package net.csust.webo.services.webo
 
-import net.csust.webo.domain.UserRepository
+import net.csust.webo.domain.repositories.CommentRepository
+import net.csust.webo.domain.repositories.UserRepository
 import net.csust.webo.domain.Webo
-import net.csust.webo.domain.WeboRepository
+import net.csust.webo.domain.repositories.WeboRepository
 import net.csust.webo.services.user.toNameView
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,6 +15,7 @@ import java.util.*
 @Service
 class WeboService(val userRepository: UserRepository,
                   val weboRepository: WeboRepository,
+                  val commentRepository: CommentRepository,
                   val recommend: RecommendService) {
     fun Webo.snapshotView(requestedByUser: Int? = null) : WeboView {
         val publisher = userRepository.findByIdOrNull(this.publishedBy)?.toNameView()
@@ -28,7 +28,7 @@ class WeboService(val userRepository: UserRepository,
                 this.content,
                 this.likedBy.size,
                 this.forwardedBy.size,
-                0,
+                commentRepository.countCommentsByCommentTo(this.id!!),
                 ifPublisherLike,
                 forwarding?.snapshotView(requestedByUser)
         )
@@ -51,6 +51,21 @@ class WeboService(val userRepository: UserRepository,
     fun getFeed(before: Instant) : List<WeboView> {
         return recommend.getRecommendGeneric(before)
                 .map { it.snapshotView() }
+    }
+
+    @Transactional
+    fun getWebosOf(userId: Int, before: Instant) : List<WeboView> {
+        return weboRepository.getFirst10ByPublishedByAndPublishTimeIsBeforeOrderByPublishTimeDesc(userId, before)
+                .map { it.snapshotView(userId) }
+    }
+
+    @Transactional
+    fun getFollowingWebos(userId: Int, before: Instant) : List<WeboView> {
+        val user = userRepository.findById(userId).orElse(null)
+        val following = user.following
+        return weboRepository
+                .getFirst10ByPublishedByIsInAndPublishTimeLessThanOrderByPublishTimeDesc(following, before)
+                .map { it.snapshotView(userId) }
     }
 
     @Transactional
@@ -89,6 +104,7 @@ class WeboService(val userRepository: UserRepository,
                 weboRepository.save(it)
             }
             weboRepository.delete(webo)
+            commentRepository.deleteAllByCommentTo(weboId)
         }
 
         @Transactional

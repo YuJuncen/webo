@@ -1,7 +1,7 @@
 package net.csust.webo.web.controllers
 
 import net.csust.webo.domain.User
-import net.csust.webo.domain.UserRepository
+import net.csust.webo.domain.repositories.UserRepository
 import net.csust.webo.services.jwt.JwtService
 import net.csust.webo.services.jwt.TokenPair
 import net.csust.webo.services.user.UserService
@@ -11,7 +11,6 @@ import net.csust.webo.web.response.WeboResponse.Companion.Status.makeResponseWit
 import net.csust.webo.web.response.WeboResponse.Companion.Status.response
 import net.csust.webo.web.response.WeboResponse.Companion.Status
 import net.csust.webo.web.annotations.InjectUserInfo
-import net.csust.webo.web.request.PageRequest
 import net.csust.webo.web.request.UserRequest
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
@@ -52,21 +51,13 @@ class HelloWorldController(val jwt: JwtService, val user: UserRepository, val us
     }
 
     @InjectUserInfo
-    @PostMapping("/follow")
-    fun followUser(@RequestAttribute(name = "user") u: User, @RequestParam followTo: Int) : WeboResponse<*> {
-        users.addFollow(u.id!!, followTo)
-        return "${u.nickname} is now following UID: $followTo".response()
-    }
-
-    @GetMapping("/get-user-following")
-    fun getUserFollow(userId: Int): WeboResponse<*> {
-        return users.getFollowings(userId).response()
-    }
-
-    @InjectUserInfo
     @PostMapping("/post-webo")
     fun postWebo(@RequestAttribute user: User, message: String?): WeboResponse<*> {
         weboService.publishWebo(user.id!!, message ?: "我还有什么话可说呢？")
         return "OK".response()
     }
+
+    @InjectUserInfo
+    @GetMapping("/whoami")
+    fun whoAmI(@RequestAttribute userId: Int) = users.getViewOfUserId(userId).response()
 }

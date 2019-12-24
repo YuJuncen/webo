@@ -1,8 +1,8 @@
 package net.csust.webo.services.webo
 
 import net.csust.webo.domain.Comment
-import net.csust.webo.domain.CommentRepository
-import net.csust.webo.domain.WeboRepository
+import net.csust.webo.domain.repositories.CommentRepository
+import net.csust.webo.domain.repositories.WeboRepository
 import net.csust.webo.services.user.UserService
 import net.csust.webo.services.webo.exceptions.NoSuchCommentException
 import net.csust.webo.services.webo.exceptions.NoSuchWeboException
