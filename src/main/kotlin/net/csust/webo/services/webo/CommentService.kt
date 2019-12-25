@@ -30,7 +30,7 @@ class CommentService(
                     .map { it.snapshotView() }
 
     fun publishCommentTo(weboId: UUID, publisher: Int,
-                         message: String, replying: UUID? = null) {
+                         message: String, replying: UUID? = null) : Comment {
         val comment = if (replying == null) {
             val webo = weboRepository.findByIdOrNull(weboId) ?: throw NoSuchWeboException
             webo.commentTo(by = publisher, content = message)
@@ -38,7 +38,7 @@ class CommentService(
             val originalComment = commentRepository.findByIdOrNull(replying) ?: throw NoSuchCommentException
             originalComment.reply(publisher, message)
         }
-        commentRepository.save(comment)
+        return commentRepository.save(comment)
     }
 
     fun removeComment(operator: Int, commentId: UUID) {

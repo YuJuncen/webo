@@ -22,7 +22,7 @@ import java.time.Instant
 import java.util.*
 import kotlin.reflect.jvm.jvmName
 
-private const val MY_NAME = "maruruku@stu.csust.edu.cn"
+private const val MY_NAME = "maruruku"
 private const val MY_PASSWORD = "a123456;"
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -103,19 +103,56 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     @Test
     fun testFollow() {
         val me = getUserOrRegister(MY_NAME, MY_PASSWORD)
         val wuBro = getUserOrRegister("hugefiver", "a123456;")
         val WU_ID = whoAmI(wuBro.token).id
         Assert.assertEquals(postMineWithToken("/user/follow", mapOf("to" to WU_ID), me.token).code, 0)
-        val data = getMine("/user/follow/all", mapOf("id" to 1)).data as List<*>
-        Assertions.assertThat(data).contains(WU_ID)
-        val wuData = getMine("/user/follow/all-by", mapOf("id" to WU_ID)).data as List<*>
-        Assertions.assertThat(wuData).contains(1)
+        val mine = getMine("/user/follow/all", mapOf("id" to 1))
+        val data = mine.data as List<Map<String, *>>
+        Assertions.assertThat(data).anyMatch { it["id"] == WU_ID }
+        val wuData = getMine("/user/follow/all-by", mapOf("id" to WU_ID)).data as List<Map<String, *>>
+        Assertions.assertThat(wuData).anyMatch { it["id"] == 1 }
         val webo = postWebo(wuBro.token, "大五哥哥天下第一！")
         val mWebos = getMyFollowWebos(1)
         Assertions.assertThat(mWebos).anyMatch { it.id == webo }
+    }
+
+    @Test
+    fun testUserModify() {
+        val me = getUserOrRegister(MY_NAME, MY_PASSWORD)
+        postMineWithToken("/user/modify", mapOf("email" to "maruruku@stu.csust.edu.cn"), me.token)
+        var after = whoAmI(me.token)
+        Assert.assertEquals("maruruku@stu.csust.edu.cn", after.email)
+
+        postMineWithToken("/user/modify", mapOf("nickname" to "大五"), me.token)
+        after = whoAmI(me.token)
+        Assert.assertEquals("大五", after.nickname)
+        Assert.assertEquals("maruruku@stu.csust.edu.cn", after.email)
+
+        postMineWithToken("/user/modify", mapOf<String, String>(), me.token)
+        after = whoAmI(me.token)
+        Assert.assertEquals("大五", after.nickname)
+        Assert.assertEquals("maruruku@stu.csust.edu.cn", after.email)
+
+        postMineWithToken("/user/modify", mapOf("email" to "a@a.com", "nickname" to "小明"), me.token)
+        after = whoAmI(me.token)
+        Assert.assertEquals("小明", after.nickname)
+        Assert.assertEquals("a@a.com", after.email)
+    }
+
+    @Test
+    fun testChangePassword() {
+        val me = getUserOrRegister(MY_NAME, MY_PASSWORD)
+        val resp = postMineWithToken("/user/change-password", mapOf("origin" to MY_PASSWORD, "changed" to "fuck it!;"), me.token)
+        Assert.assertEquals(0, resp.code)
+        val newToken = castResponse<Map<String, *>>(resp).data?.get("token")!! as String
+        val after = postMineWithToken("/user/modify", mapOf("nickname" to "大五"), me.token)
+        Assert.assertNotEquals(0, after.code)
+        val resp2 = postMineWithToken("/user/change-password", mapOf("origin" to "fuck it!;", "changed" to MY_PASSWORD), newToken)
+        Assert.assertEquals(0, resp2.code)
     }
 
     //

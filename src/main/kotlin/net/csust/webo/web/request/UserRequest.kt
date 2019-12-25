@@ -2,7 +2,6 @@ package net.csust.webo.web.request
 
 import org.springframework.validation.annotation.Validated
 import javax.validation.constraints.Max
-import javax.validation.constraints.NotNull
 
 @Validated
 data class UserRequest(

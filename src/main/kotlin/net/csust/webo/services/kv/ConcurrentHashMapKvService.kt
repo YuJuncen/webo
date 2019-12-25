@@ -1,6 +1,5 @@
 package net.csust.webo.services.kv
 
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
@@ -15,5 +14,5 @@ class ConcurrentHashMapKvService : KvService {
 
     override fun remove(key: String): Boolean = map.remove(key) != null
 
-    val map = ConcurrentHashMap<String, Any>();
+    val map = ConcurrentHashMap<String, Any>()
 }

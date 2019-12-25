@@ -8,11 +8,12 @@ import net.csust.webo.web.request.ForwardRequest
 import net.csust.webo.web.request.PostWeboRequest
 import net.csust.webo.web.request.UUIDRequest
 import net.csust.webo.web.response.WeboResponse
-import java.util.*
 import net.csust.webo.web.response.WeboResponse.Companion.Status.response
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
+import java.util.*
+import javax.validation.Valid
 
 private fun (List<WeboView>).attachNextFrom(now: Instant = Instant.now()): Map<String, *> {
     val lastTime = this.lastOrNull()?.publishTime ?: now
@@ -53,7 +54,7 @@ class WeboController(val weboService: WeboService) {
 
     @PostMapping("new")
     @InjectUserInfo
-    fun newPost(@RequestAttribute user: User, @RequestBody req: PostWeboRequest) =
+    fun newPost(@RequestAttribute user: User, @Valid @RequestBody req: PostWeboRequest) =
             weboService.publishWebo(user.id!!, req.text).response()
 
     @GetMapping("mine")

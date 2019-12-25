@@ -4,11 +4,11 @@ import net.csust.webo.domain.User
 import net.csust.webo.services.webo.CommentService
 import net.csust.webo.web.annotations.InjectUserInfo
 import net.csust.webo.web.request.CommentRequest
-import net.csust.webo.web.request.UUIDRequest
 import net.csust.webo.web.response.WeboResponse.Companion.Status.response
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.util.*
+import javax.validation.Valid
 
 @RestController
 @RequestMapping("/comment")
@@ -18,7 +18,7 @@ class CommentController(
     @PostMapping("/new")
     @InjectUserInfo
     fun newComment(@RequestAttribute user: User,
-                   @RequestBody comment: CommentRequest) =
+                   @RequestBody @Valid comment: CommentRequest) =
         commentService.publishCommentTo(comment.commentTo, user.id!!, comment.text).response()
 
 

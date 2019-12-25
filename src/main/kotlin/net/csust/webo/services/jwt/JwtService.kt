@@ -2,7 +2,6 @@ package net.csust.webo.services.jwt
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.exceptions.JWTVerificationException
-import com.auth0.jwt.exceptions.TokenExpiredException
 import com.auth0.jwt.interfaces.DecodedJWT
 import net.csust.webo.config.JwtConfig
 import net.csust.webo.domain.User
@@ -17,9 +16,9 @@ import java.util.concurrent.ConcurrentSkipListSet
 
 
 @Service
-class JwtService(private final val config: JwtConfig,
-                 private final val kvs: ConcurrentHashMapKvService,
-                 private final val user: UserService) {
+class JwtService(private val config: JwtConfig,
+                 private val kvs: ConcurrentHashMapKvService,
+                 private val user: UserService) {
     init {
         kvs.put(Fields.AVAILABLE_REFRESH, ConcurrentSkipListSet<String>())
     }
@@ -27,7 +26,7 @@ class JwtService(private final val config: JwtConfig,
     val availableTokens: MutableSet<String>
         get() = kvs.get(Fields.AVAILABLE_REFRESH)
 
-    fun sign(u: User) : TokenPair = signForUserId(u.id!!)
+    fun sign(u: User, now: Instant = Instant.now()) : TokenPair = signForUserId(u.id!!, now)
 
 
     fun login(username: String, password: String) : TokenPair {
@@ -36,19 +35,19 @@ class JwtService(private final val config: JwtConfig,
         return sign(user)
     }
 
-    private fun signForUserId(id: Int) : TokenPair {
+    private fun signForUserId(id: Int, now: Instant = Instant.now()) : TokenPair {
         fun (Instant).toDate() = Date.from(this)
         val token = JWT.create()
                 .withClaim(Fields.USER_ID, id)
-                .withClaim(Fields.CREATE_TIME, Instant.now().toDate())
-                .withExpiresAt(Instant.now().plus(config.tokenValidTime()).toDate())
+                .withClaim(Fields.CREATE_TIME, now.toDate())
+                .withExpiresAt(now.plus(config.tokenValidTime()).toDate())
                 .sign(config.algorithm)
         val refreshTokenId = UUID.randomUUID()
         val refreshToken = JWT.create()
                 .withClaim(Fields.USER_ID, id)
                 .withClaim(Fields.REFRESH_TOKEN_ID, refreshTokenId.toString())
-                .withClaim(Fields.CREATE_TIME, Instant.now().toDate())
-                .withExpiresAt(Instant.now().plus(config.refreshTokenValidTime()).toDate())
+                .withClaim(Fields.CREATE_TIME, now.toDate())
+                .withExpiresAt(now.plus(config.refreshTokenValidTime()).toDate())
                 .sign(config.algorithm)
         availableTokens.add(refreshTokenId.toString())
         return TokenPair(token, refreshToken)
@@ -73,9 +72,10 @@ class JwtService(private final val config: JwtConfig,
         val user = user.getUserInfo(userId) ?: throw RuntimeException("令牌中的用户不存在")
 
         val mustAfter = user.lastPasswordChanged
-        val valid = decoded.claims[Fields.CREATE_TIME]?.asDate()?.toInstant()?.isAfter(mustAfter) ?: false
+        val yourTime = decoded.claims[Fields.CREATE_TIME]?.asDate()?.toInstant()
+        val valid = yourTime?.isAfter(mustAfter) ?: false
         if (!valid) {
-            throw TokenExpiredException("令牌无效，因为验证者要求在 UNIX 时间 $mustAfter 之后发出的令牌（可能用户在那个时间点改了密码）。")
+            throw SecurityException("令牌无效，因为验证者要求在 $mustAfter 之后发出的令牌（可能用户在那个时间点改了密码），而您的令牌的创建时间是 $yourTime。")
         }
         return decoded to user
     }

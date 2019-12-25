@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "net.csust"
-version = "0.0.4-SNAPSHOT"
+version = "0.0.6-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 val developmentOnly by configurations.creating

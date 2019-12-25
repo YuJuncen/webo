@@ -5,11 +5,8 @@ import com.sun.istack.NotNull
 import org.hibernate.annotations.LazyCollection
 import org.hibernate.annotations.LazyCollectionOption
 import org.springframework.util.DigestUtils.md5DigestAsHex
-import java.lang.IllegalStateException
-import java.lang.RuntimeException
 import java.time.Instant
 import javax.persistence.*
-import javax.validation.constraints.Email
 
 @Entity
 @Table(uniqueConstraints = [UniqueConstraint(name="username-uniq", columnNames = ["username"])],

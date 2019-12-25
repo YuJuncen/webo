@@ -1,14 +1,15 @@
 package net.csust.webo.services.webo
 
+import net.csust.webo.domain.Webo
 import net.csust.webo.domain.repositories.CommentRepository
 import net.csust.webo.domain.repositories.UserRepository
-import net.csust.webo.domain.Webo
 import net.csust.webo.domain.repositories.WeboRepository
 import net.csust.webo.services.user.toNameView
+import net.csust.webo.services.webo.user.WeboUserService
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.lang.IllegalStateException
 import java.time.Instant
 import java.util.*
 
@@ -77,15 +78,16 @@ class WeboService(val userRepository: UserRepository,
          * 如果已经喜欢，那就不喜欢这个 Webo。
          * @param userId 操作的用户 ID。
          * @param weboId 操作的 Webo ID。
-         * @return 用户是否还爱着这个 Webo。
+         * @return 几个人还爱着这个 Webo。
          */
         @Transactional
-        fun like(userId: Int, weboId: UUID) : Boolean {
+        fun like(userId: Int, weboId: UUID) : Int {
             val toLike = weboRepository.findByIdOrNull(weboId)!!
-            val stillLike = userRepository.findByIdOrNull(userId)!!.toggleLike(toLike)
-            weboRepository.save(toLike)
-            return stillLike
+            userRepository.findByIdOrNull(userId)!!.toggleLike(toLike)
+            val webo = weboRepository.save(toLike)
+            return webo.likedBy.size
         }
+
 
         @Transactional
         fun publishWebo(userId: Int, weboMessage: String) : WeboView {
@@ -114,4 +116,5 @@ class WeboService(val userRepository: UserRepository,
             weboRepository.save(webo)
             return weboRepository.save(forwardedWebo).snapshotView()
         }
+
     }

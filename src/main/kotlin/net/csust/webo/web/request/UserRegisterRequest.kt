@@ -1,6 +1,5 @@
 package net.csust.webo.web.request
 
-import javax.validation.Valid
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
