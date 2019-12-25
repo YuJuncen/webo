@@ -14,6 +14,9 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import net.csust.webo.web.response.WeboResponse.Companion.Status
 import org.junit.Assert
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.http.HttpHeaders
 import org.springframework.http.RequestEntity
 import org.springframework.web.util.UriComponentsBuilder
@@ -127,15 +130,17 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         var after = whoAmI(me.token)
         Assert.assertEquals("maruruku@stu.csust.edu.cn", after.email)
 
-        postMineWithToken("/user/modify", mapOf("nickname" to "大五"), me.token)
+        postMineWithToken("/user/modify", mapOf("nickname" to "大五", "bio" to "一个人。"), me.token)
         after = whoAmI(me.token)
         Assert.assertEquals("大五", after.nickname)
         Assert.assertEquals("maruruku@stu.csust.edu.cn", after.email)
+        Assert.assertEquals("一个人。", after.bio)
 
         postMineWithToken("/user/modify", mapOf<String, String>(), me.token)
         after = whoAmI(me.token)
         Assert.assertEquals("大五", after.nickname)
         Assert.assertEquals("maruruku@stu.csust.edu.cn", after.email)
+        Assert.assertEquals("一个人。", after.bio)
 
         postMineWithToken("/user/modify", mapOf("email" to "a@a.com", "nickname" to "小明"), me.token)
         after = whoAmI(me.token)
@@ -145,13 +150,15 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
 
     @Test
     fun testChangePassword() {
-        val me = getUserOrRegister(MY_NAME, MY_PASSWORD)
-        val resp = postMineWithToken("/user/change-password", mapOf("origin" to MY_PASSWORD, "changed" to "fuck it!;"), me.token)
+        val name = "12j9123"
+        val password = "asd12d132d"
+        val me = getUserOrRegister(name, password)
+        val resp = postMineWithToken("/user/change-password", mapOf("origin" to password, "changed" to "fuck it!;"), me.token)
         Assert.assertEquals(0, resp.code)
         val newToken = castResponse<Map<String, *>>(resp).data?.get("token")!! as String
         val after = postMineWithToken("/user/modify", mapOf("nickname" to "大五"), me.token)
         Assert.assertNotEquals(0, after.code)
-        val resp2 = postMineWithToken("/user/change-password", mapOf("origin" to "fuck it!;", "changed" to MY_PASSWORD), newToken)
+        val resp2 = postMineWithToken("/user/change-password", mapOf("origin" to "fuck it!;", "changed" to password), newToken)
         Assert.assertEquals(0, resp2.code)
     }
 

@@ -38,7 +38,9 @@ data class User(
         @JsonIgnore
         var followedBy : MutableSet<Int> = mutableSetOf(),
 
-        var email : String? = null
+        var email : String? = null,
+
+        var bio: String? = null
 ) {
     companion object {
         fun register(username: String, password: String) : User {

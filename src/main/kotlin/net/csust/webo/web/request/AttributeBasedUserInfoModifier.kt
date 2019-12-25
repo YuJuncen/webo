@@ -10,10 +10,14 @@ data class AttributeBasedUserInfoModifier(
         val email: String?,
 
         @get:Size(max= 32)
-        val nickname: String?
+        val nickname: String?,
+
+        @get:Size(max= 32)
+        val bio: String?
 ) : UserInfoModifier {
     override fun modify(user: User) {
         email ?. let { user.email = it }
         nickname ?. let { user.nickname = it }
+        bio ?. let { user.bio = it }
     }
 }
