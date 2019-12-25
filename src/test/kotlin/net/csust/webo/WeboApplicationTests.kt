@@ -3,8 +3,10 @@ package net.csust.webo
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.csust.webo.services.jwt.TokenPair
 import net.csust.webo.services.user.UserNameView
-import net.csust.webo.services.webo.CommentView
-import net.csust.webo.services.webo.WeboView
+import net.csust.webo.services.webo.views.CommentView
+import net.csust.webo.services.webo.views.WeboDetailedView
+import net.csust.webo.services.webo.views.WeboUserView
+import net.csust.webo.services.webo.views.WeboView
 import net.csust.webo.web.response.WeboResponse
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
@@ -14,16 +16,12 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import net.csust.webo.web.response.WeboResponse.Companion.Status
 import org.junit.Assert
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.http.HttpHeaders
 import org.springframework.http.RequestEntity
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 import java.time.Instant
 import java.util.*
-import kotlin.reflect.jvm.jvmName
 
 private const val MY_NAME = "maruruku"
 private const val MY_PASSWORD = "a123456;"
@@ -70,7 +68,7 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         val weboId = postWebo(token, "我是被爱的 webo！")
         likeWebo(token, weboId)
         val webo = getMyWebo(weboId, 1)
-        Assertions.assertThat(webo.likes).isGreaterThan(0)
+        Assertions.assertThat(webo.base.likes).isGreaterThan(0)
     }
 
     @Test
@@ -162,6 +160,19 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         Assert.assertEquals(0, resp2.code)
     }
 
+    @Test
+    fun testGetMyInfo() {
+        val me = getUserOrRegister(MY_NAME, MY_PASSWORD)
+        val mine = getMineWithToken("/user/me", me.token).parsed<WeboUserView>()
+        Assert.assertEquals(0, mine.code)
+        Assert.assertEquals(MY_NAME, mine.data!!.personal.username)
+        val id = mine.data!!.personal.id
+
+        val mine2 = getMine("/user", mapOf("id" to id)).parsed<WeboUserView>()
+        Assert.assertEquals(0, mine2.code)
+        Assert.assertEquals(MY_NAME, mine2.data!!.personal.username)
+    }
+
     //
     //
     //
@@ -171,12 +182,14 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
     //
 
     private inline fun <reified T> castResponse(raw: WeboResponse<*>) : WeboResponse<T> {
-        val parsedData = mapper.convertValue(raw.data, T::class.java)
+        val parsedData = mapper.convertValue(raw.data, T::class.java)!!
         return WeboResponse<T>(raw.code).apply {
             data = parsedData
             message = raw.message
         }
     }
+
+    private inline fun <reified T> (WeboResponse<*>).parsed() = castResponse<T>(this)
 
     private fun whoAmI(token: String) : UserNameView {
         val resp = getMineWithToken("/whoami", token)
@@ -216,11 +229,11 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         Assertions.assertThat(response.code).isEqualTo(0)
     }
 
-    private fun getMyWebo(webo: UUID, myself: Int): WeboView {
+    private fun getMyWebo(webo: UUID, myself: Int): WeboDetailedView {
         val resp = getMine("/post", mapOf("id" to webo.toString(), "userId" to myself.toString()))
         Assertions.assertThat(resp.code).isEqualTo(0)
         val data = resp.data as Map<*, *>
-        return mapper.convertValue(data, WeboView::class.java)
+        return mapper.convertValue(data, WeboDetailedView::class.java)
     }
 
 

@@ -1,4 +1,4 @@
-package net.csust.webo.services.webo
+package net.csust.webo.services.webo.views
 
 import net.csust.webo.services.user.UserNameView
 import java.time.Instant

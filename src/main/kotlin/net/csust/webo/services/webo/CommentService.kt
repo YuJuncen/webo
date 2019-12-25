@@ -6,6 +6,7 @@ import net.csust.webo.domain.repositories.WeboRepository
 import net.csust.webo.services.user.UserService
 import net.csust.webo.services.webo.exceptions.NoSuchCommentException
 import net.csust.webo.services.webo.exceptions.NoSuchWeboException
+import net.csust.webo.services.webo.views.CommentView
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.time.Instant

@@ -1,9 +1,8 @@
-package net.csust.webo.services.webo
+package net.csust.webo.services.webo.views
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 
 data class WeboDetailedView(
-        @JsonUnwrapped
         val base: WeboView,
 
         val sampleLiker: Set<Int>

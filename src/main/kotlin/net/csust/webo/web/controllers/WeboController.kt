@@ -2,7 +2,7 @@ package net.csust.webo.web.controllers
 
 import net.csust.webo.domain.User
 import net.csust.webo.services.webo.WeboService
-import net.csust.webo.services.webo.WeboView
+import net.csust.webo.services.webo.views.WeboView
 import net.csust.webo.web.annotations.InjectUserInfo
 import net.csust.webo.web.request.ForwardRequest
 import net.csust.webo.web.request.PostWeboRequest

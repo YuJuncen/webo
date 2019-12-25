@@ -1,5 +1,6 @@
 package net.csust.webo.services.webo.user
 
+import net.csust.webo.services.webo.views.WeboUserView
 import org.springframework.data.domain.Pageable
 
 interface WeboUserService {
@@ -8,6 +9,5 @@ interface WeboUserService {
     fun follow(operatorId: Int, followeeId: Int)
     fun unfollow(operatorId: Int, followeeId: Int)
     fun isFollowing(userId: Int, toUserId: Int) : Boolean
-    fun countFollowing(userId: Int) : Int
-    fun countFollowers(userId: Int) : Int
+    fun getUserOf(userId: Int) : WeboUserView?
 }

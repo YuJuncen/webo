@@ -94,4 +94,11 @@ class UserController(val userService: UserService,
         val signed = jwt.sign(user, user.lastPasswordChanged.plusSeconds(1))
         return signed.response()
     }
+
+    @GetMapping("")
+    fun getUserInfo(id: Int) = weboUserService.getUserOf(id).response()
+
+    @GetMapping("/me")
+    @InjectUserInfo
+    fun getMyInfo(@RequestAttribute userId: Int) = weboUserService.getUserOf(userId).response()
 }
