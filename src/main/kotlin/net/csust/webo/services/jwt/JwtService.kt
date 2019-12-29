@@ -2,6 +2,7 @@ package net.csust.webo.services.jwt
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.exceptions.TokenExpiredException
 import com.auth0.jwt.interfaces.DecodedJWT
 import net.csust.webo.config.JwtConfig
 import net.csust.webo.domain.User
@@ -71,11 +72,16 @@ class JwtService(private val config: JwtConfig,
         val userId = decoded.getClaim(Fields.USER_ID).asInt()
         val user = user.getUserInfo(userId) ?: throw RuntimeException("令牌中的用户不存在")
 
-        val mustAfter = user.lastPasswordChanged
         val yourTime = decoded.claims[Fields.CREATE_TIME]?.asDate()?.toInstant()
+
+        val expireAt = decoded.expiresAt.toInstant()
+        val isOutDated = Instant.now().isAfter(expireAt)
+        if (isOutDated) throw TokenExpiredException("令牌已经在 $expireAt 过期。")
+
+        val mustAfter = user.lastPasswordChanged
         val valid = yourTime?.isAfter(mustAfter) ?: false
         if (!valid) {
-            throw SecurityException("令牌无效，因为验证者要求在 $mustAfter 之后发出的令牌（可能用户在那个时间点改了密码），而您的令牌的创建时间是 $yourTime。")
+            throw TokenExpiredException("令牌无效，因为验证者要求在 $mustAfter 之后发出的令牌（可能用户在那个时间点改了密码），而您的令牌的创建时间是 $yourTime。")
         }
         return decoded to user
     }

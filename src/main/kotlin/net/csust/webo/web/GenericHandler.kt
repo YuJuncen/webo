@@ -2,6 +2,7 @@ package net.csust.webo.web
 
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
+import net.csust.webo.web.exceptions.NoToken
 import net.csust.webo.web.response.WeboResponse
 import net.csust.webo.web.response.WeboResponse.Companion.Status
 import net.csust.webo.web.response.WeboResponse.Companion.Status.makeResponseWith
@@ -16,7 +17,7 @@ import org.springframework.web.context.request.WebRequest
 @ControllerAdvice
 class GenericHandler {
     companion object {
-        val logger = LoggerFactory.getLogger(javaClass)
+        val logger = LoggerFactory.getLogger(GenericHandler::class.java)
 
         fun (Exception).toJson() = mapOf<String, Any>(
                 "exceptionMessage" to (this.message ?: "没有可用消息！"),
@@ -67,4 +68,8 @@ class GenericHandler {
                 .forEach { logger.debug(it.toString()) }
         return Status.SERVER_ERROR.makeResponseWith(ex.toJson())
     }
+
+    @ExceptionHandler(NoToken::class)
+    @ResponseBody
+    fun handleNoToken() = Status.NOT_AUTH.makeResponseWith(Unit)
 }

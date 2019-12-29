@@ -3,6 +3,7 @@ package net.csust.webo.web
 import net.csust.webo.services.jwt.JwtService
 import net.csust.webo.services.user.UserService
 import net.csust.webo.web.annotations.InjectUserInfo
+import net.csust.webo.web.exceptions.NoToken
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
@@ -23,7 +24,7 @@ class WriteUser(val jwt: JwtService, val user: UserService): HandlerInterceptorA
             return true
         }
 
-        val token = request.getHeader(HttpHeaders.AUTHORIZATION)
+        val token = request.getHeader(HttpHeaders.AUTHORIZATION) ?: throw NoToken
         val user = jwt.verify(token)
         request.setAttribute(USER, user)
         request.setAttribute(USER_ID, user.id!!)

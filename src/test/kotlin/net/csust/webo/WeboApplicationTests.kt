@@ -8,14 +8,14 @@ import net.csust.webo.services.webo.views.WeboDetailedView
 import net.csust.webo.services.webo.views.WeboUserView
 import net.csust.webo.services.webo.views.WeboView
 import net.csust.webo.web.response.WeboResponse
+import net.csust.webo.web.response.WeboResponse.Companion.Status
 import org.assertj.core.api.Assertions
+import org.junit.Assert
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
-import net.csust.webo.web.response.WeboResponse.Companion.Status
-import org.junit.Assert
 import org.springframework.http.HttpHeaders
 import org.springframework.http.RequestEntity
 import org.springframework.web.util.UriComponentsBuilder
@@ -77,6 +77,7 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         val token = user.token
         val weboId = postWebo(token, "我是被评论的 webo！")
         comment(weboId, token, "我能评论木？")
+        Thread.sleep(10)
         val comments = getComments(weboId)
         val myComment = comments.find { it.publisher?.username == MY_NAME && it.content == "我能评论木？" }
         Assert.assertNotNull(myComment)
@@ -90,17 +91,18 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         val user = getUserOrRegister(MY_NAME, MY_PASSWORD)
         val token = user.token
         val weboId = postWebo(token, "我是被评论的 webo！")
-        (1 .. 14).forEach {
+        (1..14).forEach {
             comment(weboId, token, "我能评论木？$it")
         }
+        Thread.sleep(10)
         val comments = getComments(weboId)
-        comments.zip(14 downTo 4).forEach {
-            Assert.assertEquals("我能评论木？${it.second}", it.first.content)
+        comments.zip(14 downTo 4).forEach { (comment, nth) ->
+            Assert.assertEquals("我能评论木？$nth", comment.content)
         }
         val nextTime = comments.last().publishTime
         val remainingComments = getComments(weboId, nextTime)
-        remainingComments.zip(4 downTo 0).forEach {
-            Assert.assertEquals("我能评论木？${it.second}", it.first.content)
+        remainingComments.zip(4 downTo 0).forEach { (comment, nth) ->
+            Assert.assertEquals("我能评论木？$nth", comment.content)
         }
     }
 
@@ -110,12 +112,13 @@ class WeboApplicationTests(@Autowired val mapper : ObjectMapper){
         val me = getUserOrRegister(MY_NAME, MY_PASSWORD)
         val wuBro = getUserOrRegister("hugefiver", "a123456;")
         val WU_ID = whoAmI(wuBro.token).id
+        val MY_ID = whoAmI(me.token).id
         Assert.assertEquals(postMineWithToken("/user/follow", mapOf("to" to WU_ID), me.token).code, 0)
-        val mine = getMine("/user/follow/all", mapOf("id" to 1))
+        val mine = getMine("/user/follow/all", mapOf("id" to MY_ID))
         val data = mine.data as List<Map<String, *>>
         Assertions.assertThat(data).anyMatch { it["id"] == WU_ID }
         val wuData = getMine("/user/follow/all-by", mapOf("id" to WU_ID)).data as List<Map<String, *>>
-        Assertions.assertThat(wuData).anyMatch { it["id"] == 1 }
+        Assertions.assertThat(wuData).anyMatch { it["id"] == MY_ID }
         val webo = postWebo(wuBro.token, "大五哥哥天下第一！")
         val mWebos = getMyFollowWebos(1)
         Assertions.assertThat(mWebos).anyMatch { it.id == webo }
